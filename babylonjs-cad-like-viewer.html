@@ -16,7 +16,6 @@
 
  -->
 
-
 <!DOCTYPE html>
 <html>
 
@@ -33,6 +32,9 @@
     <!-- Babylon.js のパッケージを読み込む-->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+    <!-- <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script> -->
+
 
     <style>
         html,
@@ -191,40 +193,38 @@
             });
         }
 
-        const engine = null;
-        const scene = null;
-        const sceneToRender = null;
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
         const createDefaultEngine = function () { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, disableWebGL2Support: false }); };
 
 
         const createScene = async function () {
 
             const scene = new BABYLON.Scene(engine);
-            scene.debugLayer.show({
-                embedMode: true,
-            });
+
             // シーンの背景を透明にする（CSSを適用している為）
             scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
-            // カメラを設置する
-            const camera = new BABYLON.ArcRotateCamera("Camera", (135 / 180) * Math.PI, (60 / 180) * Math.PI, 50, BABYLON.Vector3.Zero(), scene);
 
-            // canvasにカメラを
+            // カメラを生成する
+            const camera = new BABYLON.ArcRotateCamera("Camera", (135 / 180) * Math.PI, (60 / 180) * Math.PI, 50, BABYLON.Vector3.Zero(), scene);
+            // 生成したカメラをcanvasに接続
             camera.attachControl(canvas, true);
 
-            //物体の中心がカメラにセットできる
+            //カメラのオート調整機能を適用する
             camera.useFramingBehavior = true;
             camera.framingBehavior.radiusScale = 0.8;
 
             //照明の設定
+            //半球ライトを生成
             const light1 = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(0, 1, 0), scene);
             light1.diffuse = new BABYLON.Color3(1, 1, 1);
             light1.groundColor = new BABYLON.Color3(50 / 255, 50 / 255, 50 / 255);
 
             light1.intensity = 1; //照明の強さ
 
-
             //3Dモデル（.gltf）を読み込む
-            const res = await BABYLON.SceneLoader.ImportMeshAsync("", "scenes/", "untitled.gltf", scene);
+            const res = await BABYLON.SceneLoader.ImportMeshAsync("", "3dmodel/", "gear-motor.gltf", scene);
             //色を変える
             res.meshes[1].material.albedoColor = new BABYLON.Color3.FromHexString("#c1b2e1");
 
@@ -232,11 +232,11 @@
             let parent = new BABYLON.Mesh("parent", scene);
             //_root_nodeを取得する
             const rootMesh = res.meshes[0];
+            //rootMeshの要素に、各種の処理を適用する
             rootMesh.getChildMeshes(false).forEach(node => {
-                node.enableEdgesRendering(Math.cos((45 / 180) * Math.PI));//メッシュに輪郭線を描画する
+                node.enableEdgesRendering(Math.cos((30 / 180) * Math.PI));//メッシュに輪郭線を描画する
                 node.edgesWidth = 10;//線の太さを指定
                 node.edgesColor = new BABYLON.Color4(0, 0, 0, 1); //線の色を指定
-                //node.edgesShareWithInstances = true;
                 node.setParent(parent); //子メッシュの収容先（ "parent" ）を指定する
             });
 
@@ -244,7 +244,8 @@
             let childMeshes = parent.getChildMeshes();
 
             //子メッシュ全体の境界点を取得する準備
-            //https://doc.babylonjs.com/features/featuresDeepDive/mesh/displayBoundingBoxes
+            // 処理方法は、以下のbabylonjsのドキュメントを参照しました。
+            // https://doc.babylonjs.com/features/featuresDeepDive/mesh/displayBoundingBoxes
             let min = childMeshes[0].getBoundingInfo().boundingBox.minimumWorld;
             let max = childMeshes[0].getBoundingInfo().boundingBox.maximumWorld;
 
