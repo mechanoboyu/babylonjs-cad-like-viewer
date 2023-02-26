@@ -1,0 +1,350 @@
+<!--  
+  Tiitle：Babylon.js で作るCADっぽいシンプルビューア サンプル
+  Auther：Noboyu https://www.noboyu.com/
+
+    このファイルには、Apache License, Version 2.0 のライセンスで配布されている成果物を含んでいます。
+    This file includes work covered by the following copyright and permission notices:
+ 
+   * Babylon.js
+   * babylonjs.loaders.js
+    https://www.babylonjs.com/
+    https://github.com/BabylonJS/Babylon.js
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+
+ -->
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>Babylon.js で作るCADっぽいシンプルビューア サンプル</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+
+    <!-- Babylon.js のパッケージを読み込む-->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            /* シーンの背景。
+            環境光ではないので、物体の見え方には影響しない。 */
+            background: linear-gradient(to bottom right, #DDE1EA, rgb(255, 255, 255));
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        /* 操作パネルのCSS */
+        .container {
+            position: fixed;
+            top: 50px;
+            right: 50px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 90%;
+        }
+
+        .btn {
+            border-radius: 100%;
+            box-shadow: 0 3px 10px 2px #2c2b2b7a;
+        }
+
+        .btn i {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 25px;
+            font-weight: bold
+        }
+
+        .homebutton {
+            width: 90px;
+            height: 90px;
+            background: #0d34bc;
+            color: #ffffff;
+            flex-shrink: 0;
+
+        }
+
+        .homebutton:hover {
+            background: #e0e8ff;
+            color: #757c9c;
+        }
+
+        .views {
+            visibility: hidden;
+            list-style-type: none;
+            position: relative;
+            padding: 5px;
+            margin: 8% 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            transition: all 500ms ease-in-out;
+        }
+
+        .views li {
+            padding: 10px 0px;
+            min-height: 0;
+        }
+
+        .view-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 100%;
+            /* background: #4d4748; */
+            background: #1c291f;
+            color: #ffffff;
+
+        }
+
+        .view-button:hover {
+            background: #6a726c;
+        }
+
+        .homebutton:hover+.views,
+        .homebutton:focus+.views,
+        .homebutton:focus-within+.views,
+        .views:hover {
+            visibility: visible;
+        }
+
+        @media screen and (max-width: 992px) {
+            .container {
+                top: 3%;
+                right: 3%;
+            }
+
+            .view-button {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+
+    <!-- 操作パネル部HTML -->
+    <div class="container">
+        <div class="btn homebutton" tabindex="0" id="home">
+            <i class="fas fa-home icon"></i>
+        </div>
+
+        <ul class="views">
+            <li>
+                <div class="btn view-button" id="top">
+                    <i>上</i>
+                </div>
+            </li>
+            <li>
+
+                <div class="btn view-button" id="right">
+                    <i>右</i>
+                </div>
+            </li>
+            <li>
+
+                <div class="btn view-button" id="left">
+                    <i>左</i>
+                </div>
+            </li>
+            <li>
+                <div class="btn view-button" id="bottom">
+                    <i>下</i>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("renderCanvas");
+
+        const startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        const engine = null;
+        const scene = null;
+        const sceneToRender = null;
+        const createDefaultEngine = function () { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, disableWebGL2Support: false }); };
+
+
+        const createScene = async function () {
+
+            const scene = new BABYLON.Scene(engine);
+            scene.debugLayer.show({
+                embedMode: true,
+            });
+            // シーンの背景を透明にする（CSSを適用している為）
+            scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+            // カメラを設置する
+            const camera = new BABYLON.ArcRotateCamera("Camera", (135 / 180) * Math.PI, (60 / 180) * Math.PI, 50, BABYLON.Vector3.Zero(), scene);
+
+            // canvasにカメラを
+            camera.attachControl(canvas, true);
+
+            //物体の中心がカメラにセットできる
+            camera.useFramingBehavior = true;
+            camera.framingBehavior.radiusScale = 0.8;
+
+            //照明の設定
+            const light1 = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(0, 1, 0), scene);
+            light1.diffuse = new BABYLON.Color3(1, 1, 1);
+            light1.groundColor = new BABYLON.Color3(50 / 255, 50 / 255, 50 / 255);
+
+            light1.intensity = 1; //照明の強さ
+
+
+            //3Dモデル（.gltf）を読み込む
+            const res = await BABYLON.SceneLoader.ImportMeshAsync("", "scenes/", "untitled.gltf", scene);
+            //色を変える
+            res.meshes[1].material.albedoColor = new BABYLON.Color3.FromHexString("#c1b2e1");
+
+            //子メッシュの収容先を作っておく
+            let parent = new BABYLON.Mesh("parent", scene);
+            //_root_nodeを取得する
+            const rootMesh = res.meshes[0];
+            rootMesh.getChildMeshes(false).forEach(node => {
+                node.enableEdgesRendering(Math.cos((45 / 180) * Math.PI));//メッシュに輪郭線を描画する
+                node.edgesWidth = 10;//線の太さを指定
+                node.edgesColor = new BABYLON.Color4(0, 0, 0, 1); //線の色を指定
+                //node.edgesShareWithInstances = true;
+                node.setParent(parent); //子メッシュの収容先（ "parent" ）を指定する
+            });
+
+            //parentに収納したメッシュ一覧を取得する
+            let childMeshes = parent.getChildMeshes();
+
+            //子メッシュ全体の境界点を取得する準備
+            //https://doc.babylonjs.com/features/featuresDeepDive/mesh/displayBoundingBoxes
+            let min = childMeshes[0].getBoundingInfo().boundingBox.minimumWorld;
+            let max = childMeshes[0].getBoundingInfo().boundingBox.maximumWorld;
+
+            for (let i = 0; i < childMeshes.length; i++) {
+                let meshMin = childMeshes[i].getBoundingInfo().boundingBox.minimumWorld;
+                let meshMax = childMeshes[i].getBoundingInfo().boundingBox.maximumWorld;
+
+                min = BABYLON.Vector3.Minimize(min, meshMin);
+                max = BABYLON.Vector3.Maximize(max, meshMax);
+            }
+            //メッシュ全体の境界点を取得し、更新する
+            parent.setBoundingInfo(new BABYLON.BoundingInfo(min, max));
+
+            //本体を回転させる。3Dモデルの向きに問題なければ、このコードは不要
+            parent.rotation = new BABYLON.Vector3((270 / 180) * Math.PI, (270 / 180) * Math.PI, 0);
+
+            //カメラの照準をセット
+            camera.setTarget(parent, true);
+
+            //PANすると回転中心が狂う（settargetが書き換わる）ので、pan禁止にする
+            camera.panningSensibility = 0;
+            //境界の枠を出す。必要であればtrue
+            parent.showBoundingBox = false;
+
+            //読み込み時のホームポジションを記憶する
+            camera.storeState();
+            //勝手に角度が戻らないようにする
+            camera.framingBehavior.elevationReturnTime = -1;
+
+            //操作パネル部
+            const home = document.getElementById("home");
+            home.addEventListener("click", () => {
+                //if (camera) {
+
+                camera.restoreState();
+                //}
+            });
+
+            const top = document.getElementById("top");
+            top.addEventListener("click", () => {
+                if (camera) {
+                    camera.alpha = Math.PI / 2;
+                    camera.beta = 0;
+                }
+            });
+
+            const right = document.getElementById("right");
+            right.addEventListener("click", () => {
+                if (camera) {
+                    camera.alpha = Math.PI;
+                    camera.beta = Math.PI / 2;
+                }
+            });
+
+            const left = document.getElementById("left");
+            left.addEventListener("click", () => {
+                if (camera) {
+
+                    camera.alpha = 0;
+                    camera.beta = Math.PI / 2;
+                }
+            });
+
+            const bottom = document.getElementById("bottom");
+            bottom.addEventListener("click", () => {
+                if (camera) {
+
+                    camera.alpha = Math.PI / 2;
+                    camera.beta = Math.PI;
+                }
+            });
+
+            return scene;
+        };
+        window.initFunction = async function () {
+
+            const asyncEngineCreation = async function () {
+                try {
+                    return createDefaultEngine();
+                } catch (e) {
+                    console.log("the available createEngine function failed. Creating the default engine instead");
+                    return createDefaultEngine();
+                }
+            }
+
+            window.engine = await asyncEngineCreation();
+            if (!engine) throw 'engine should not be null.';
+            startRenderLoop(engine, canvas);
+            window.scene = createScene();
+        };
+        initFunction().then(() => {
+            scene.then(returnedScene => { sceneToRender = returnedScene; });
+
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+
+</html>
