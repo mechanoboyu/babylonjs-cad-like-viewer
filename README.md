@@ -11,9 +11,10 @@ https://mechanoboyu.github.io/babylonjs-cad-like-viewer/babylonjs-cad-like-viewe
 1. HTMLファイル
 2. glTFファイル
 
-## 作り方の詳細は、ブログに記載しています。
+## 作り方
+作り方の詳細は、ブログに記載しています。
+https://www.noboyu.com/babylonjs-viewer-with-edge-3d-model/
 
 
 
-<!-- ![複数のDwgファイルのモデル空間を、一括で1枚の図面に集めて、並べまている様子](https://www.noboyu.com/wp-content/uploads/2023/01/batch-insert-demo.gif) -->
 
