@@ -1,5 +1,6 @@
 
-このリポジトリには、[「ブラウザに3Dモデルを輪郭線と表示。CADっぽいビューアを作る方法【babylon.js】」] (https://www.noboyu.com/babylonjs-viewer-with-edge-3d-model/)のデモファイルを置いています。
+
+このリポジトリには、「[ブラウザに3Dモデルを輪郭線と表示。CADっぽいビューアを作る方法【babylon.js】](https://www.noboyu.com/babylonjs-viewer-with-edge-3d-model/)のデモファイルを置いています。
 
 ## デモ
 
