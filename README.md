@@ -6,6 +6,9 @@
 
 https://mechanoboyu.github.io/babylonjs-cad-like-viewer/babylonjs-cad-like-viewer.html
 
+* Webサイトにiframeで埋め込んだ状態
+https://mechanoboyu.github.io/babylonjs-cad-like-viewer/babylonjs-iframe-embedded-test.html
+
 ## 実行ファイル
 実行に必要なファイルは以下の2つで、docsフォルダに入っています。
 
