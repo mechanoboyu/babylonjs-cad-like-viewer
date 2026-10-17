@@ -226,7 +226,7 @@
             //3Dモデル（.gltf）を読み込む
             const res = await BABYLON.SceneLoader.ImportMeshAsync("", "3dmodel/", "gear-motor.gltf", scene);
             //色を変える
-            res.meshes[1].material.albedoColor = new BABYLON.Color3.FromHexString("#c1b2e1");
+            res.meshes[1].material.albedoColor = BABYLON.Color3.FromHexString("#c1b2e1");
 
             //子メッシュの収容先を作っておく
             let parent = new BABYLON.Mesh("parent", scene);
